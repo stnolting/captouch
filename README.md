@@ -20,8 +20,8 @@ The button status output is filtered to provide reliable operation without metas
 calibration process, which can be re-triggered any time, the controller automatically adapts itself to setup's
 electrical characteristics.
 
-The controller can operate in stand-alone mode (imagine a tiny [Lattice ICE40](https://www.latticesemi.com/en/Products/FPGAandCPLD/iCE40)
-turned into a multi-channel touch controller), as controller for custom logic or as IO processor attached to a
+The controller can operate in stand-alone mode (imagine a tiny [Lattice iCE40 FPGA](https://www.latticesemi.com/en/Products/FPGAandCPLD/iCE40)
+turned into a multi-channel touch controller), as controller for custom logic or as fancy user interface attached to a
 [soft-core](https://github.com/stnolting/neorv32) processor system.
 
 :bulb: The VHDL source code is written in a _platform-independent_ way - no device-specific libraries, primitives,
@@ -191,7 +191,7 @@ constant filter_size_c : integer := 3; -- output filter size in bits
 of the touch controller (higher sample frequency and wider counter -> higher resolution). You might need to experiment
 with these two value to find the perfect resolution for your specific pad configuration.
 
-:warning: If `scnt_size_c` is too low, the controller will fail calibration process (`ready_o` stays low).
+:warning: If `scnt_size_c` is too small, the controller will fail calibration process (`ready_o` stays low).
 
 ### Simulation
 
