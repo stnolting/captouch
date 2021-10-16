@@ -74,7 +74,8 @@ of the FPGA's input buffers. Internal synchronization registers make sure there 
 
 As an illustration the following (_crappy_) image shows two exemplary charging curves: The curve reaching the IO buffer's
 trigger voltage `U_trig` at time `T_base` represents a touch pad with no finger close to it. The second curve that reaches
-`U_trig` at `T_pushed` represents a "pushed" capacitive button.
+`U_trig` at `T_pushed` represents a "pushed" capacitive button. `U_IO` is the supply voltage of the FPIO IO bank that is
+used to connect the capacitive pads.
 
 ![Theory](https://raw.githubusercontent.com/stnolting/captouch/main/img/theory.png)
 
