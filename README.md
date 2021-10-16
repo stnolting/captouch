@@ -40,10 +40,10 @@ can also be used to turn _bare_ copper contacts into touch buttons (like the [FO
 
 ### Example Setup
 
-My test setups implements 3 capacitive buttons. Each button is tied to the IO supply (3.3.V) via 1M pull-up resistor.
-The actual pads are made from kitchen aluminum foil wrapped around bare copper wires and are insulated via two
-layers of _Tesafilm_ (transparent Scotch Tape). The FPGA is an Intel Cyclone IV running at 100MHz. The four right-most LEDs
-are used to display the `captouch` controller status: "calibration done" status (`ready_o`) on the right followed by three
+My test setups implements 3 capacitive buttons. Each button is tied to the IO supply (3.3.V) via 1M pull-up resistors.
+The actual pads are made from kitchen aluminum foil wrapped around bare copper wires and are insulated with two
+layers of _Tesafilm_ (transparent Scotch Tape). The FPGA is an Intel Cyclone IV running at 100MHz. The four left-most LEDs
+are used to display the `captouch` controller status: "calibration done" status (`ready_o`) on the far-left followed by three
 LEDs showing the current touch button states (`touch_o`).
 
 ![captouch in action](https://raw.githubusercontent.com/stnolting/captouch/main/img/demo.gif)
