@@ -181,9 +181,8 @@ constant filter_size_c : integer := 3; -- output filter size in bits
 
 
 :bulb: The sampling frequency `f_sample_c` and the sample counter width `scnt_size_c` define the actual _resolution_
-of the touch controller.
-
-:bulb: 
+of the touch controller (higher sample frequency and wider counter -> higher resolution). You might need to experiment
+with these two value to find the perfect resolution for your specific pad configuration.
 
 :warning: If `scnt_size_c` is too low, the controller will fail calibration process (`ready_o` stays low).
 
