@@ -133,6 +133,12 @@ port (
 :bulb: All interface signals are of type `std_ulogic`/`std_ulogic_vector` except for the bi-directional tri-state
 capacitive pad interface that is of type `std_logic_vector` (_resolved_ type; only relevant for simulation).
 
+:bulb: The controller uses only a single clock domain. Internal clocks use pre-scalers and clock enables rather than
+_real derived clocks_.
+
+:bulb: The controller clock speed `F_CLOCK` should be greater than the internal pad sampling frequency
+(see [Fine-Tuning](#Fine-Tuning)).
+
 ### Configuration Generics
 
 | Name | Type | Description |
