@@ -1,7 +1,21 @@
 -- #################################################################################################
--- # << Capacitive Touch Controller >>                                                             #
+-- # << captouch - Capacitive Buttons for any FPGA! >>                                             #
 -- # ********************************************************************************************* #
--- # captouch - Capacitive Buttons for _any_ FPGA!                                                 #
+-- # Technology-agnostic controller to turn conductive pads into touch buttons.                    #
+-- #                                                                                               #
+-- # The controller evaluates the change of time required to charge the capacitance of the pads    #
+-- # to the supply voltage. If there is a finger close to a pad, the pad's capacitance is          #
+-- # increased requiring more time to get fully charged                                            #
+-- #                                                                                               #
+-- # The actual touch pads are connected to pad_io. The resulting (filtered/stabilized) button     #
+-- # state is available via touch_o (1 when touched). The controller is calibrated by issuing a    #
+-- # reset - either via the global async reset line (rstn_i) or via the sync rstn_sync_i signal,   #
+-- # which can be driven by application logic. Make sure to NOT touch any pads while calibrating.  #
+-- #                                                                                               #
+-- # Electrical Requirements:                                                                      #
+-- # - The pad_io signal is bi-directional and requires FPGA-internal tri-state drivers            #
+-- # - Each pad connected to pad_io requires an external pull-up resistor (~1M Ohm) to the supply  #
+-- #   voltage of the according FPGA IO bank                                                       #
 -- # ********************************************************************************************* #
 -- # BSD 3-Clause License                                                                          #
 -- #                                                                                               #
@@ -69,7 +83,7 @@ architecture captouch_rtl of captouch is
   constant sample_time_c : integer := (F_CLOCK / f_sample_c) - 1;
   constant output_time_c : integer := (f_sample_c / f_output_c) - 1;
   constant dcnt_size_c   : integer := scnt_size_c / 4;
-  constant channel_one_c : std_logic_vector(NUM_PADS-1  downto 0) := (others => '1');
+  constant channel_one_c : std_logic_vector(NUM_PADS-1 downto 0) := (others => '1');
   constant filter_one_c  : std_ulogic_vector(filter_size_c-1 downto 0) := (others => '1');
   constant filter_zero_c : std_ulogic_vector(filter_size_c-1 downto 0) := (others => '0');
 
@@ -189,7 +203,7 @@ begin
 
           when S_INIT_SAMPLE => -- calibrate buttons (time until charged WITHOUT button push)
           -- ------------------------------------------------------------
-            ctrl.thres <= std_ulogic_vector(unsigned(ctrl.thres) + 1);
+            ctrl.thres <= std_ulogic_vector(unsigned(ctrl.thres) + 1); -- time required to charge base capacitance
             if (ctrl.thres(ctrl.thres'left) = '1') then -- overflow
               ctrl.state <= S_INIT_START;
             elsif (ctrl.sync1 = channel_one_c) then -- all buttons charged
@@ -226,11 +240,11 @@ begin
     end if;
   end process controller;
 
-  -- threshold time --
+  -- threshold time to distinguish between pushed and not-pushed state --
   threshold_comp: process(ctrl.thres)
     variable tmp_v : std_ulogic_vector(scnt_size_c-1 downto 0);
   begin
-    case SENSITIVITY is
+    case SENSITIVITY is -- this defines the additional time required to charge the pad's increased capacitance (+ finger)
       when 1 => tmp_v := "0000" & ctrl.thres(ctrl.thres'left downto 4); -- 0.0625 * thres [high]
       when 2 => tmp_v := "000" & ctrl.thres(ctrl.thres'left downto 3); -- 0.125 * thres [medium]
       when 3 => tmp_v := "00" & ctrl.thres(ctrl.thres'left downto 2); -- 0.25 * thres [low]
