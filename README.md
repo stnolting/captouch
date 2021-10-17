@@ -1,4 +1,4 @@
-# `captouch` - Capacitive Buttons for _any_ FPGA!
+# `captouch` - Capacitive Touch Buttons for _any_ FPGA!
 
 [![license](https://img.shields.io/github/license/stnolting/captouch?longCache=true&style=flat-square)](https://github.com/stnolting/captouch/blob/main/LICENSE)
 
