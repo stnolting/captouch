@@ -37,6 +37,7 @@ IO supply. Any FPGA pin can be used as pad interface as long as the pin supports
 
 :bulb: The touch pads also work if a finger directly touches the pad creating an ohmic contact. Hence, the controller
 can also be used to turn _bare_ copper contacts into touch buttons (like the [FOMU](https://tomu.im/fomu.html) "buttons").
+The approach using this controller is more reliable then just using copper pads as direct input.
 
 ### Example Setup
 
@@ -84,6 +85,9 @@ the supply voltage. After reset, the controller enters calibration mode. It disc
 internal counter to zero. After that, the pad's FPGA pins are switched to input mode. Now the pads charge via the
 external pull-up resistors. As soon as _all_ pads are charged, the controller stops the time measuring counter and
 leaves calibration mode.
+
+The time it takes to charge a pad back to `U_IO` is defined by the capacitance of the pad (the electrode area) and the
+pull-up resistor.
 
 :bulb: Make sure to keep your fingers away from the pads during calibration to allow the controller to determine
 the pad's _base capacitance_.
@@ -189,7 +193,7 @@ constant filter_size_c : integer := 3; -- output filter size in bits
 
 :bulb: The sampling frequency `f_sample_c` and the sample counter width `scnt_size_c` define the actual _resolution_
 of the touch controller (higher sample frequency and wider counter -> higher resolution). You might need to experiment
-with these two value to find the perfect resolution for your specific pad configuration.
+with these two values to find the perfect resolution for your specific pad configuration.
 
 :warning: If `scnt_size_c` is too small, the controller will fail calibration process (`ready_o` stays low).
 
