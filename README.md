@@ -71,8 +71,6 @@ Logic Cells:               145
 Dedicated Logic Registers:  78
 ```
 
-[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
-
 
 ## Theory of Operation
 
@@ -117,8 +115,6 @@ the current state of the pads (a binary value: fully charged or not) is sampled.
 
 Several sampling results are stored into a buffer to stabilize ("filter") the current pad state. This final pad state is
 output and indicated whether a capacitive button is "pushed" or not.
-
-[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
 
 
 ## Top Entity
@@ -181,8 +177,6 @@ in order to detect the button as "pushed":
 
 :bulb: The status outputs (`ready_o` and `touch_o`) are synchronized to the input clock (`clk_i`).
 
-[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
-
 
 ## Fine-Tuning
 
@@ -210,7 +204,6 @@ with these two values to find the perfect resolution for your specific pad confi
 
 :warning: If `scnt_size_c` is too small, the controller will fail calibration process (`ready_o` stays low).
 
-[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
 
 ## Simulation
 
@@ -228,8 +221,6 @@ so it can be viewed using _gtkwave_:
 ```
 captouch/sim$ gtkwave captouch.vcd
 ```
-
-[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
 
 
 ## License
