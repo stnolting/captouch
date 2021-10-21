@@ -10,6 +10,14 @@
    * [Configuration Generics](#Configuration-Generics)
    * [Interface Signals](#Interface-Signals)
 * [Fine-Tuning](#Fine-Tuning)
+* [Simulation](#Simulation)
+
+
+**Rationale** I was thinking about adding a capacitive touch interface to the
+[NEORV32 RISC-V Processor](https://github.com/stnolting/neorv32). A software library (something like Microchip's
+QTouch :registered:) seems feasible, but might eat up a lot of CPU power. But since we are in the world of FPGAs,
+a dedicated hardware module seems to be the better approach. I finally decided to implement this as a stand-alone
+project as it might be a handy SoC building block for any custom setup.
 
 
 ## Overview
@@ -20,12 +28,13 @@ The button status output is filtered to provide reliable operation without metas
 calibration process, which can be re-triggered any time, the controller automatically adapts itself to setup's
 electrical characteristics.
 
-The controller can operate in stand-alone mode (imagine a tiny [Lattice iCE40 FPGA](https://www.latticesemi.com/en/Products/FPGAandCPLD/iCE40)
-turned into a multi-channel touch controller), as controller for custom logic or as fancy user interface attached to a
-[soft-core](https://github.com/stnolting/neorv32) processor system.
-
 :bulb: The VHDL source code is written in a _platform-independent_ way - no device-specific libraries, primitives,
 macros or attributes are used.
+
+The controller can operate in stand-alone mode (imagine a tiny [Lattice iCE40 FPGA](https://www.latticesemi.com/en/Products/FPGAandCPLD/iCE40)
+turned into a multi-channel touch controller), as controller for custom logic or as fancy user interface attached to a
+soft-core processor system.
+
 
 ### Electrical Requirements
 
@@ -36,8 +45,8 @@ IO supply. Any FPGA pin can be used as pad interface as long as the pin supports
 ![pad wiring](https://raw.githubusercontent.com/stnolting/captouch/main/img/schematic.png)
 
 :bulb: The touch pads also work if a finger directly touches the pad creating an ohmic contact. Hence, the controller
-can also be used to turn _bare_ copper contacts into touch buttons (like the [FOMU](https://tomu.im/fomu.html) "buttons").
-The approach using this controller is more reliable then just using copper pads as direct input.
+can also be used to turn _bare_ copper contacts into touch buttons (like the [FOMU FPGA board](https://tomu.im/fomu.html)
+"buttons"). The approach using this controller is more reliable then just using copper pads as direct input.
 
 ### Example Setup
 
@@ -52,7 +61,7 @@ LEDs showing the current touch button states (`touch_o`).
 (gif made with [imgflip](https://imgflip.com/gif-maker))
 
 Note that this is **not(!)** an optimal setup. :wink: Using long and twisted cables might keep the capacitance of the
-individual wires quite identical, but also leads to intense crosstalk (between the wires themselves and also between
+individual wires quite identical but also leads to intense crosstalk (between the wires themselves and also between
 the wires and basically everything around).
 
 Mapping results for an Intel Cyclone IV `EP4CE22F17C6` FPGA using 3 capacitive buttons (`NUM_PADS` = **3**):
@@ -62,16 +71,15 @@ Logic Cells:               145
 Dedicated Logic Registers:  78
 ```
 
+[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
+
 
 ## Theory of Operation
 
-The controller uses the fact that larger capacitors needs more time to charge when powered by a limited current source
-(which is a very high pull-up resistor in this case). The touch pad serve as variable capacitors in this setup. If there
-is no finger next to them they have a fixed base capacitance defines by the conductive pad area (and it's surroundings).
-If a finger comes close to a pad it serves as additional _large_ electrode increasing the pad's capacitance.
-
-The current potential (charging level/voltage) is an analog value that is turned into a digital value by the hysteresis
-of the FPGA's input buffers. Internal synchronization registers make sure there is no metastability left.
+The controller uses the fact that greater capacitors need more time to charge when powered by a limited current source
+(which is a very high pull-up resistor in this case). The touch pads serve as variable capacitors in this setup. If there
+is no finger next to them they have a fixed _base capacitance_ defined by the conductive pad area (and it's surroundings).
+If a finger comes close to a pad the finger acts as additional electrode increasing the pad's capacitance.
 
 As an illustration the following (_crappy_) image shows two exemplary charging curves: The curve reaching the IO buffer's
 trigger voltage `U_trig` at time `T_base` represents a touch pad with no finger close to it. The second curve that reaches
@@ -80,23 +88,24 @@ used to connect the capacitive pads.
 
 ![Theory](https://raw.githubusercontent.com/stnolting/captouch/main/img/theory.png)
 
+The time it takes to charge a pad back to `U_IO` is defined by the capacitance of the pad (the electrode area) and the
+pull-up resistor. The pad's potential (charging level/voltage) is an analog value that is turned into a digital value
+by the hysteresis of the FPGA's input buffers. Internal synchronization registers make sure there is no metastability left.
+
 The controller measures the time until a discharged pad (temporarily tied to ground) takes until it is charged to
 the supply voltage. After reset, the controller enters calibration mode. It discharges all pads first and initializes an
 internal counter to zero. After that, the pad's FPGA pins are switched to input mode. Now the pads charge via the
 external pull-up resistors. As soon as _all_ pads are charged, the controller stops the time measuring counter and
 leaves calibration mode.
 
-The time it takes to charge a pad back to `U_IO` is defined by the capacitance of the pad (the electrode area) and the
-pull-up resistor.
-
 :bulb: Make sure to keep your fingers away from the pads during calibration to allow the controller to determine
 the pad's _base capacitance_.
 
-The counter state, which indicated the required sample cycles until _all_ pads were fully charged, is used to compute
-a _threshold_. The computation is configured by the `SENSITIVITY` generic. Based on this generic, the controller
-adds a certain offset to the counter value, which results in the final _threshold_. Basically, this offset represents
-the _additional_ capacitance (your finger) required to trigger the "pushed" state of the pads. See section
-[Fine-Tuning](#Fine-Tuning) for more information.
+The counter state, which indicates the required sample cycles until _all_ pads were fully charged, is used to compute
+a _threshold_. The computation is configured by the [`SENSITIVITY` generic](#Configuration-Generics). Based on this generic,
+the controller adds a certain offset to the counter value, which results in the final _threshold_. Basically, this offset
+represents the _additional_ capacitance (your finger) required to trigger the "pushed" state of the pads. There are further
+configuration options to customize the sensitivity - see section [Fine-Tuning](#Fine-Tuning) for more information.
 
 :bulb: The controller uses a _global_ threshold value for _all_ pads. Hence, the final threshold is defined by the
 pad with highest base capacitance. If you want to use different touch pads with _very_ different sizes (= very different 
@@ -108,6 +117,8 @@ the current state of the pads (a binary value: fully charged or not) is sampled.
 
 Several sampling results are stored into a buffer to stabilize ("filter") the current pad state. This final pad state is
 output and indicated whether a capacitive button is "pushed" or not.
+
+[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
 
 
 ## Top Entity
@@ -170,6 +181,8 @@ in order to detect the button as "pushed":
 
 :bulb: The status outputs (`ready_o` and `touch_o`) are synchronized to the input clock (`clk_i`).
 
+[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
+
 
 ## Fine-Tuning
 
@@ -197,7 +210,9 @@ with these two values to find the perfect resolution for your specific pad confi
 
 :warning: If `scnt_size_c` is too small, the controller will fail calibration process (`ready_o` stays low).
 
-### Simulation
+[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
+
+## Simulation
 
 The projects provides a very simple testbench (to check the _controller-internal_ states only - no simulation of
 the capacitive touch pads yet) [`sim/captouch.vhd`](https://github.com/stnolting/captouch/blob/main/sim/captouch_tb.vhd), which
@@ -213,6 +228,8 @@ so it can be viewed using _gtkwave_:
 ```
 captouch/sim$ gtkwave captouch.vcd
 ```
+
+[[back to top](#captouch-Capacitive-Touch-Buttons-for-any-FPGA)]
 
 
 ## License
