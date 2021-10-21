@@ -223,7 +223,9 @@ captouch/sim$ gtkwave captouch.vcd
 ```
 
 
-## License
+## Legal
+
+### License
 
 This project is released under the [BSD-3-Clause License](https://github.com/stnolting/captouch/blob/master/LICENSE).
 
