@@ -46,12 +46,13 @@ IO supply. Any FPGA pin can be used as pad interface as long as the pin supports
 
 :bulb: The touch pads also work if a finger directly touches the pad creating an ohmic contact. Hence, the controller
 can also be used to turn _bare_ copper contacts into touch buttons (like the [FOMU FPGA board](https://tomu.im/fomu.html)
-"buttons"). The approach using this controller is more reliable then just using copper pads as direct input.
+"buttons"). The approach using this controller is more reliable then just using copper pads as direct input. However,
+this is not really recommended (ESD!).
 
 ### Example Setup
 
 My test setups implements 3 capacitive buttons. Each button is tied to the IO supply (3.3.V) via 1M pull-up resistors.
-The actual pads are made from kitchen aluminum foil wrapped around bare copper wires and are insulated with two
+The actual pads are made from kitchen aluminum foil wrapped around bare copper wires and are **insulated** with two
 layers of _Tesafilm_ (transparent Scotch Tape). The FPGA is an Intel Cyclone IV running at 100MHz. The four left-most LEDs
 are used to display the `captouch` controller status: "calibration done" status (`ready_o`) on the far-left followed by three
 LEDs showing the current touch button states (`touch_o`).
