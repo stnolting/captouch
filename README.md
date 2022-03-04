@@ -122,25 +122,27 @@ output and indicated whether a capacitive button is "pushed" or not.
 ## Top Entity
 
 The top entity is `captouch` ([`rtl/captouch.vhd`](https://github.com/stnolting/captouch/blob/main/rtl/captouch.vhd)).
-It can be directly instantiated. No special libraries are used/required.
+It can be instantiated right away - no special/device-specific libraries are required at all.
 
 ```vhdl
-generic (
-  F_CLOCK     : integer; -- frequency of clk_i in Hz
-  NUM_PADS    : integer; -- number of touch pads
-  SENSITIVITY : integer  -- 1=high, 2=medium, 3=low
-);
-port (
-  -- global control --
-  clk_i       : in    std_ulogic; -- clock
-  rstn_i      : in    std_ulogic; -- async reset, low-active
-  rstn_sync_i : in    std_ulogic; -- sync reset, low-active
-  -- status --
-  ready_o     : out   std_ulogic; -- system calibration done when high
-  touch_o     : out   std_ulogic_vector(NUM_PADS-1 downto 0); -- touch pads state
-  -- touch pads --
-  pad_io      : inout std_logic_vector(NUM_PADS-1 downto 0)   -- capacitive touch pads
-);
+entity captouch is
+  generic (
+    F_CLOCK     : integer; -- frequency of clk_i in Hz
+    NUM_PADS    : integer; -- number of touch pads
+    SENSITIVITY : integer  -- 1=high, 2=medium, 3=low
+  );
+  port (
+    -- global control --
+    clk_i       : in    std_ulogic; -- clock
+    rstn_i      : in    std_ulogic; -- async reset, low-active
+    rstn_sync_i : in    std_ulogic; -- sync reset, low-active
+    -- status --
+    ready_o     : out   std_ulogic; -- system calibration done when high
+    touch_o     : out   std_ulogic_vector(NUM_PADS-1 downto 0); -- touch pads state
+    -- touch pads --
+    pad_io      : inout std_logic_vector(NUM_PADS-1 downto 0)   -- capacitive touch pads
+  );
+end captouch;
 ```
 
 :bulb: All interface signals are of type `std_ulogic`/`std_ulogic_vector` except for the bi-directional tri-state
